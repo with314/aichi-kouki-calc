@@ -7,30 +7,34 @@
 
 <style>
 body{
-  font-family: system-ui, sans-serif;
-  background:#f5f7fa;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:#f3f6fb;
   margin:0;
   padding:20px;
   color:#222;
 }
 .container{
-  max-width:900px;
+  max-width:1000px;
   margin:auto;
-  background:white;
+  background:#fff;
   padding:24px;
-  border-radius:12px;
-  box-shadow:0 4px 16px rgba(0,0,0,.08);
+  border-radius:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.08);
 }
 h1{
   font-size:24px;
-  border-left:6px solid #2b6cb0;
+  border-left:7px solid #2563eb;
   padding-left:12px;
 }
+h2{
+  margin-top:0;
+}
 .notice{
-  background:#fff8e1;
+  background:#fff7df;
+  border-left:5px solid #f59e0b;
   padding:12px;
-  border-left:5px solid #f0b429;
   margin:16px 0;
+  font-size:14px;
 }
 .card{
   border:1px solid #ddd;
@@ -41,7 +45,7 @@ h1{
 }
 .grid{
   display:grid;
-  grid-template-columns:180px 1fr;
+  grid-template-columns:190px 1fr;
   gap:10px;
   align-items:center;
 }
@@ -49,16 +53,24 @@ input{
   padding:10px;
   font-size:16px;
 }
+.checkbox{
+  width:20px;
+  height:20px;
+}
 button{
   width:100%;
   padding:14px;
+  margin-top:12px;
   font-size:18px;
   font-weight:bold;
-  background:#2b6cb0;
+  background:#2563eb;
   color:white;
   border:none;
   border-radius:8px;
   cursor:pointer;
+}
+.print-btn{
+  background:#475569;
 }
 .result{
   margin-top:20px;
@@ -82,13 +94,36 @@ th{
 td:first-child,th:first-child{
   text-align:left;
 }
+.total{
+  font-size:20px;
+  font-weight:bold;
+  color:#1d4ed8;
+}
 .small{
   font-size:13px;
   color:#555;
 }
-@media(max-width:600px){
+.basis{
+  background:#f8fafc;
+  border:1px solid #d0d7de;
+  border-radius:8px;
+  padding:12px;
+  margin-top:16px;
+}
+@media(max-width:650px){
   .grid{
     grid-template-columns:1fr;
+  }
+}
+@media print{
+  button{
+    display:none;
+  }
+  body{
+    background:white;
+  }
+  .container{
+    box-shadow:none;
   }
 }
 </style>
@@ -101,17 +136,18 @@ td:first-child,th:first-child{
 
 <div class="notice">
 この試算は概算です。実際の保険料額とは異なる場合があります。<br>
-100円未満を切り捨てて表示します。
+試算結果は100円未満を切り捨てて表示します。<br>
+令和8年度は、医療分と子ども・子育て支援金分を合算して計算します。
 </div>
 
 <div class="card">
   <h2>世帯主</h2>
   <div class="grid">
     <label>年齢</label>
-    <input type="number" id="h_age" value="80">
+    <input type="number" id="h_age" placeholder="例：80">
 
     <label>年金収入（年額）</label>
-    <input type="number" id="h_pension" value="1680000">
+    <input type="number" id="h_pension" value="0">
 
     <label>給与収入（年額）</label>
     <input type="number" id="h_salary" value="0">
@@ -119,8 +155,8 @@ td:first-child,th:first-child{
     <label>その他の所得（年額）</label>
     <input type="number" id="h_other" value="0">
 
-    <label>被保険者</label>
-    <input type="checkbox" id="h_insured" checked>
+    <label>世帯主が被保険者</label>
+    <input type="checkbox" id="h_insured" class="checkbox">
   </div>
 </div>
 
@@ -128,7 +164,7 @@ td:first-child,th:first-child{
   <h2>家族1（被保険者）</h2>
   <div class="grid">
     <label>年齢</label>
-    <input type="number" id="f1_age">
+    <input type="number" id="f1_age" placeholder="未入力なら対象外">
 
     <label>年金収入（年額）</label>
     <input type="number" id="f1_pension" value="0">
@@ -138,9 +174,6 @@ td:first-child,th:first-child{
 
     <label>その他の所得（年額）</label>
     <input type="number" id="f1_other" value="0">
-
-    <label>被保険者として計算</label>
-    <input type="checkbox" id="f1_insured">
   </div>
 </div>
 
@@ -148,7 +181,7 @@ td:first-child,th:first-child{
   <h2>家族2（被保険者）</h2>
   <div class="grid">
     <label>年齢</label>
-    <input type="number" id="f2_age">
+    <input type="number" id="f2_age" placeholder="未入力なら対象外">
 
     <label>年金収入（年額）</label>
     <input type="number" id="f2_pension" value="0">
@@ -158,20 +191,19 @@ td:first-child,th:first-child{
 
     <label>その他の所得（年額）</label>
     <input type="number" id="f2_other" value="0">
-
-    <label>被保険者として計算</label>
-    <input type="checkbox" id="f2_insured">
   </div>
 </div>
 
 <button onclick="calculate()">試算する</button>
+<button onclick="window.print()" class="print-btn">印刷・PDF保存</button>
 
 <div id="result" class="result">
 ここに試算結果が表示されます。
 </div>
 
 <p class="small">
-令和8年度料率：医療分 所得割率10.48％・均等割56,130円、子ども分 所得割率0.25％・均等割1,362円。
+令和8年度料率：医療分 均等割56,130円・所得割率10.48％・限度額850,000円。
+子ども分 均等割1,362円・所得割率0.25％・限度額21,000円。
 </p>
 
 </div>
@@ -243,17 +275,33 @@ function pensionIncome(age, revenue){
   return revenue - 1955000;
 }
 
-function readPerson(prefix, name){
+function readPerson(prefix, name, insuredRule){
   const age = num(prefix + "_age");
   const pension = num(prefix + "_pension");
   const salary = num(prefix + "_salary");
   const other = num(prefix + "_other");
-  const insured = checked(prefix + "_insured");
+
+  let insured = false;
+  if(insuredRule === "checkbox"){
+    insured = checked(prefix + "_insured");
+  }else{
+    insured = age > 0;
+  }
 
   const pIncome = pensionIncome(age, pension);
   const sIncome = salaryIncome(salary);
   const totalIncome = Math.max(0, pIncome + sIncome + other);
   const taxableIncome = Math.max(0, totalIncome - CONFIG.basicDeduction);
+
+  const lightIncome = Math.max(
+    0,
+    totalIncome - (age >= 65 && pension > 0 ? 150000 : 0)
+  );
+
+  const salaryPensionPerson =
+    salary > 550000 ||
+    (age >= 65 && pension > 1250000) ||
+    (age < 65 && pension > 600000);
 
   return {
     name,
@@ -265,23 +313,82 @@ function readPerson(prefix, name){
     pIncome,
     sIncome,
     totalIncome,
-    taxableIncome
+    taxableIncome,
+    lightIncome,
+    salaryPensionPerson
   };
 }
 
-function calcPremium(person){
-  const medicalIncome = person.taxableIncome * CONFIG.medicalRate;
-  const childIncome = person.taxableIncome * CONFIG.childRate;
+function getReduction(lightIncomeTotal, insuredCount, salaryPensionCount){
+  const extra = salaryPensionCount >= 2
+    ? 100000 * (salaryPensionCount - 1)
+    : 0;
 
-  const medical = floor100(
-    Math.min(CONFIG.medicalLimit, CONFIG.medicalEqual + medicalIncome)
-  );
+  const limit70 = 430000 + extra;
+  const limit50 = 430000 + 305000 * insuredCount + extra;
+  const limit20 = 430000 + 560000 * insuredCount + extra;
 
-  const child = floor100(
-    Math.min(CONFIG.childLimit, CONFIG.childEqual + childIncome)
-  );
+  if(lightIncomeTotal <= limit70){
+    return {
+      label:"7割軽減＋医療分0.2割追加軽減",
+      medicalRate:0.72,
+      childRate:0.70,
+      limit:limit70
+    };
+  }
+
+  if(lightIncomeTotal <= limit50){
+    return {
+      label:"5割軽減",
+      medicalRate:0.50,
+      childRate:0.50,
+      limit:limit50
+    };
+  }
+
+  if(lightIncomeTotal <= limit20){
+    return {
+      label:"2割軽減",
+      medicalRate:0.20,
+      childRate:0.20,
+      limit:limit20
+    };
+  }
 
   return {
+    label:"軽減なし",
+    medicalRate:0,
+    childRate:0,
+    limit:0
+  };
+}
+
+function calcPremium(person, reduction){
+  const medicalEqualAfter =
+    CONFIG.medicalEqual - Math.ceil(CONFIG.medicalEqual * reduction.medicalRate);
+
+  const childEqualAfter =
+    CONFIG.childEqual - Math.ceil(CONFIG.childEqual * reduction.childRate);
+
+  const medicalIncome = Math.floor(person.taxableIncome * CONFIG.medicalRate);
+  const childIncome = Math.floor(person.taxableIncome * CONFIG.childRate);
+
+  const medicalBeforeFloor = Math.min(
+    CONFIG.medicalLimit,
+    medicalEqualAfter + medicalIncome
+  );
+
+  const childBeforeFloor = Math.min(
+    CONFIG.childLimit,
+    childEqualAfter + childIncome
+  );
+
+  const medical = floor100(medicalBeforeFloor);
+  const child = floor100(childBeforeFloor);
+
+  return {
+    medicalEqualAfter,
+    childEqualAfter,
     medicalIncome,
     childIncome,
     medical,
@@ -292,24 +399,42 @@ function calcPremium(person){
 
 function calculate(){
   const people = [
-    readPerson("h", "世帯主"),
-    readPerson("f1", "家族1"),
-    readPerson("f2", "家族2")
+    readPerson("h", "世帯主", "checkbox"),
+    readPerson("f1", "家族1", "auto"),
+    readPerson("f2", "家族2", "auto")
   ];
 
-  const insuredPeople = people.filter(p => p.age > 0 && p.insured);
+  const validPeople = people.filter(p => p.age > 0);
+  const insuredPeople = validPeople.filter(p => p.insured);
 
-  if(insuredPeople.length === 0){
+  if(num("h_age") <= 0){
     document.getElementById("result").innerHTML =
-      "年齢を入力し、被保険者にチェックを入れてください。";
+      "世帯主の年齢は必ず入力してください。";
     return;
   }
 
+  if(insuredPeople.length === 0){
+    document.getElementById("result").innerHTML =
+      "被保険者がいません。世帯主を被保険者にするか、家族1・家族2の年齢を入力してください。";
+    return;
+  }
+
+  const insuredCount = insuredPeople.length;
+  const lightIncomeTotal = validPeople.reduce((sum,p)=>sum+p.lightIncome,0);
+  const salaryPensionCount = validPeople.filter(p=>p.salaryPensionPerson).length;
+
+  const reduction = getReduction(
+    lightIncomeTotal,
+    insuredCount,
+    salaryPensionCount
+  );
+
   let rows = "";
+  let basisRows = "";
   let totalAll = 0;
 
-  insuredPeople.forEach(p => {
-    const premium = calcPremium(p);
+  insuredPeople.forEach(p=>{
+    const premium = calcPremium(p, reduction);
     totalAll += premium.total;
 
     rows += `
@@ -317,15 +442,33 @@ function calculate(){
         <td>${p.name}</td>
         <td>${yen(p.totalIncome)}</td>
         <td>${yen(p.taxableIncome)}</td>
-        <td>${yen(p.medical || premium.medical)}</td>
-        <td>${yen(p.child || premium.child)}</td>
+        <td>${yen(premium.medical)}</td>
+        <td>${yen(premium.child)}</td>
         <td><strong>${yen(premium.total)}</strong></td>
+      </tr>
+    `;
+
+    basisRows += `
+      <tr>
+        <td>${p.name}</td>
+        <td>
+          医療分：${yen(premium.medicalEqualAfter)} ＋ ${yen(p.taxableIncome)} × 10.48％
+          ＝ ${yen(premium.medical)}<br>
+          子ども分：${yen(premium.childEqualAfter)} ＋ ${yen(p.taxableIncome)} × 0.25％
+          ＝ ${yen(premium.child)}
+        </td>
       </tr>
     `;
   });
 
   document.getElementById("result").innerHTML = `
     <h2>試算結果</h2>
+
+    <p><strong>均等割軽減判定：</strong>${reduction.label}</p>
+    <p><strong>軽減判定所得金額の合計：</strong>${yen(lightIncomeTotal)}</p>
+    <p><strong>世帯の被保険者数：</strong>${insuredCount}人</p>
+    <p><strong>給与所得者等の人数：</strong>${salaryPensionCount}人</p>
+
     <table>
       <thead>
         <tr>
@@ -340,15 +483,30 @@ function calculate(){
       <tbody>
         ${rows}
         <tr>
-          <th colspan="5">合計</th>
-          <th>${yen(totalAll)}</th>
+          <th colspan="5">世帯合計</th>
+          <th class="total">${yen(totalAll)}</th>
         </tr>
       </tbody>
     </table>
 
+    <div class="basis">
+      <h3>計算根拠</h3>
+      <table>
+        <tbody>
+          ${basisRows}
+        </tbody>
+      </table>
+      <p class="small">
+        医療分：均等割56,130円、所得割率10.48％、限度額850,000円。<br>
+        子ども分：均等割1,362円、所得割率0.25％、限度額21,000円。<br>
+        所得割対象額＝所得金額－基礎控除430,000円。<br>
+        表示額は100円未満切り捨てです。
+      </p>
+    </div>
+
     <p class="small">
-      ※この版は、まず医療分・子ども分の基本計算を反映した簡易版です。<br>
-      ※均等割の7割・5割・2割軽減、令和8年度の7割軽減対象者への追加0.2割軽減、元被扶養者軽減などは次の段階で追加します。
+      ※この試算は概算です。実際の保険料額とは異なる場合があります。<br>
+      ※損益通算、損失の繰越控除、専従者控除、譲渡所得の特別控除、元被扶養者軽減などがある場合は、この簡易版では正確に試算できない場合があります。
     </p>
   `;
 }
