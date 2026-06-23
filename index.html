@@ -2,14 +2,79 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>テスト</title>
+<title>愛知県 後期高齢者医療保険料計算</title>
+
+<style>
+body{
+    font-family: sans-serif;
+    max-width:700px;
+    margin:auto;
+    padding:40px;
+}
+
+input{
+    width:250px;
+    padding:8px;
+    font-size:18px;
+}
+
+button{
+    padding:10px 20px;
+    font-size:18px;
+    margin-top:20px;
+    cursor:pointer;
+}
+
+#result{
+    margin-top:30px;
+    font-size:22px;
+    color:blue;
+}
+</style>
+
 </head>
 
 <body>
 
-<h1>公開成功！🎉</h1>
+<h1>愛知県 後期高齢者医療保険料計算</h1>
 
-<p>GitHub Pages が正常に動いています。</p>
+<p>総所得金額等（円）</p>
+
+<input
+type="number"
+id="income"
+placeholder="例：2000000">
+
+<br>
+
+<button onclick="calc()">
+
+計算する
+
+</button>
+
+<div id="result">
+
+ここに結果が表示されます
+
+</div>
+
+<script>
+
+function calc(){
+
+const income =
+Number(document.getElementById("income").value);
+
+document.getElementById("result").innerHTML=
+
+"入力された金額：" +
+income.toLocaleString() +
+" 円";
+
+}
+
+</script>
 
 </body>
 </html>
